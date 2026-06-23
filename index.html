@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Horas</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+    padding:20px;
+}
+
+.container{
+    max-width:500px;
+    margin:auto;
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    margin-bottom:20px;
+    color:#333;
+}
+
+label{
+    display:block;
+    margin-top:12px;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-top:5px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:16px;
+}
+
+.botoes{
+    display:flex;
+    gap:10px;
+    margin-top:20px;
+}
+
+button{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.calcular{
+    background:#007bff;
+    color:white;
+}
+
+.limpar{
+    background:#dc3545;
+    color:white;
+}
+
+.resultado{
+    margin-top:25px;
+    padding:15px;
+    background:#f8f9fa;
+    border-radius:10px;
+}
+
+.resultado p{
+    margin:10px 0;
+    font-size:18px;
+}
+
+.status{
+    font-weight:bold;
+    font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Simulador de Horas</h1>
+
+    <label>Entrada</label>
+    <input type="time" id="entrada">
+
+    <label>Saída para Almoço</label>
+    <input type="time" id="almocoSaida">
+
+    <label>Retorno do Almoço</label>
+    <input type="time" id="almocoRetorno">
+
+    <label>Saída Final</label>
+    <input type="time" id="saida">
+
+    <label>Jornada Contratual</label>
+    <input type="time" id="jornada" value="07:20">
+
+    <div class="botoes">
+        <button class="calcular" onclick="calcular()">Calcular</button>
+        <button class="limpar" onclick="limparCampos()">Limpar</button>
+    </div>
+
+    <div class="resultado">
+        <p><strong>Horas Trabalhadas:</strong> <span id="trabalhadas">00:00</span></p>
+        <p><strong>Banco de Horas:</strong> <span id="banco">00:00</span></p>
+        <p class="status" id="status">-</p>
+    </div>
+
+</div>
+
+<script>
+
+function paraMinutos(hora){
+    const [h,m] = hora.split(':').map(Number);
+    return h*60 + m;
+}
+
+function formatar(minutos){
+
+    const sinal = minutos < 0 ? "-" : "";
+
+    minutos = Math.abs(minutos);
+
+    const h = Math.floor(minutos/60);
+    const m = minutos%60;
+
+    return sinal +
+           String(h).padStart(2,'0') +
+           ":" +
+           String(m).padStart(2,'0');
+}
+
+function calcular(){
+
+    const entrada = document.getElementById("entrada").value;
+    const almocoSaida = document.getElementById("almocoSaida").value;
+    const almocoRetorno = document.getElementById("almocoRetorno").value;
+    const saida = document.getElementById("saida").value;
+    const jornada = document.getElementById("jornada").value;
+
+    if(!entrada || !almocoSaida || !almocoRetorno || !saida || !jornada){
+        alert("Preencha todos os campos.");
+        return;
+    }
+
+    const periodo1 =
+        paraMinutos(almocoSaida) -
+        paraMinutos(entrada);
+
+    const periodo2 =
+        paraMinutos(saida) -
+        paraMinutos(almocoRetorno);
+
+    const trabalhadas =
+        periodo1 + periodo2;
+
+    const jornadaMin =
+        paraMinutos(jornada);
+
+    const banco =
+        trabalhadas - jornadaMin;
+
+    document.getElementById("trabalhadas").innerText =
+        formatar(trabalhadas);
+
+    document.getElementById("banco").innerText =
+        formatar(banco);
+
+    const status =
+        document.getElementById("status");
+
+    if(banco > 0){
+        status.innerText =
+            "CRÉDITO DE HORAS";
+        status.style.color =
+            "green";
+    }
+    else if(banco < 0){
+        status.innerText =
+            "DÉBITO DE HORAS";
+        status.style.color =
+            "red";
+    }
+    else{
+        status.innerText =
+            "JORNADA CUMPRIDA";
+        status.style.color =
+            "#007bff";
+    }
+}
+
+function limparCampos(){
+
+    document.querySelectorAll("input")
+        .forEach(campo => campo.value = "");
+
+    document.getElementById("trabalhadas")
+        .innerText = "00:00";
+
+    document.getElementById("banco")
+        .innerText = "00:00";
+
+    document.getElementById("status")
+        .innerText = "-";
+}
+
+</script>
+
+</body>
+</html>
